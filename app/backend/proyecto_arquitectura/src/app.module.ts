@@ -20,7 +20,7 @@ import { User } from './users/entities/user.entity';
       password: process.env.DB_PASSWORD || 'postgres',
       database: process.env.DB_DATABASE || 'proyecto_arquitectura',
       entities: [User],
-      synchronize: true, // ⚠️ Solo para desarrollo, desactivar en producción
+      synchronize: true, 
       logging: true,
     }),
     UsersModule,

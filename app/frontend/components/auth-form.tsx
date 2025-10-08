@@ -5,21 +5,36 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { useAuth } from "@/lib/hooks/useAuth"
 
 interface AuthFormProps {
   isLogin: boolean
   onToggle: () => void
+  onSuccess?: () => void
 }
 
-export default function AuthForm({ isLogin, onToggle }: AuthFormProps) {
+export default function AuthForm({ isLogin, onToggle, onSuccess }: AuthFormProps) {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [name, setName] = useState("")
   const [focusedField, setFocusedField] = useState<string | null>(null)
+  
+  const { login, register, loading, error } = useAuth()
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log(`[v0] ${isLogin ? "Login" : "Register"} attempt:`, { email, password, name })
+
+    try {
+      if (isLogin) {
+        await login({ email, password })
+      } else {
+        await register({ email, password, name })
+      }
+      onSuccess?.()
+    } catch (err) {
+      // Error ya está manejado en el hook
+      console.error('Error de autenticación:', err)
+    }
   }
 
   return (
@@ -33,6 +48,11 @@ export default function AuthForm({ isLogin, onToggle }: AuthFormProps) {
             <p className="font-sans text-base font-light tracking-wide text-muted-foreground md:text-lg">
               {isLogin ? "Ingresa tus credenciales para continuar" : "Completa el formulario para registrarte"}
             </p>
+            {error && (
+              <p className="font-sans text-sm font-normal text-red-500 bg-red-50 dark:bg-red-950/20 py-2 px-4 rounded">
+                {error}
+              </p>
+            )}
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-8">
@@ -132,9 +152,12 @@ export default function AuthForm({ isLogin, onToggle }: AuthFormProps) {
 
             <Button
               type="submit"
-              className="group relative w-full overflow-hidden bg-foreground py-7 font-sans text-lg font-light tracking-wide text-background transition-all hover:bg-foreground/90"
+              disabled={loading}
+              className="group relative w-full overflow-hidden bg-foreground py-7 font-sans text-lg font-light tracking-wide text-background transition-all hover:bg-foreground/90 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <span className="relative z-10">{isLogin ? "Iniciar Sesión" : "Registrarse"}</span>
+              <span className="relative z-10">
+                {loading ? 'Procesando...' : (isLogin ? "Iniciar Sesión" : "Registrarse")}
+              </span>
               <div className="absolute inset-0 z-0 bg-accent opacity-0 transition-opacity duration-300 group-hover:opacity-10" />
             </Button>
           </form>
