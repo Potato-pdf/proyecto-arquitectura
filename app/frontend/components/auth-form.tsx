@@ -20,7 +20,7 @@ export default function AuthForm({ isLogin, onToggle, onSuccess }: AuthFormProps
   const [lastName, setLastName] = useState("")
   const [focusedField, setFocusedField] = useState<string | null>(null)
   
-  const { login, register, loading, error } = useAuth()
+  const { login, register, loading, error } = useAuth(true) // Skip validation en login
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -45,10 +45,10 @@ export default function AuthForm({ isLogin, onToggle, onSuccess }: AuthFormProps
   }
 
   return (
-    <div className="flex h-full w-full items-center justify-center bg-background">
-      <div className="relative w-full h-full flex items-center justify-center px-8 md:px-16 lg:px-20">
-        <div className="space-y-10 w-full max-w-2xl">
-          <div className="space-y-4 text-center">
+    <div className="flex h-full w-full items-center justify-center bg-background" suppressHydrationWarning>
+      <div className="relative w-full h-full flex items-center justify-center px-8 md:px-16 lg:px-20" suppressHydrationWarning>
+        <div className="space-y-10 w-full max-w-2xl" suppressHydrationWarning>
+          <div className="space-y-4 text-center" suppressHydrationWarning>
             <h1 className="font-sans text-5xl font-extralight tracking-tight text-foreground md:text-6xl lg:text-7xl">
               {isLogin ? "Bienvenido" : "Crear Cuenta"}
             </h1>
@@ -62,7 +62,7 @@ export default function AuthForm({ isLogin, onToggle, onSuccess }: AuthFormProps
             )}
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-8">
+          <form onSubmit={handleSubmit} className="space-y-8" suppressHydrationWarning>
             {!isLogin && (
               <>
                 <div className="space-y-3">
@@ -198,7 +198,7 @@ export default function AuthForm({ isLogin, onToggle, onSuccess }: AuthFormProps
             </Button>
           </form>
 
-          <div className="space-y-4 pt-6 text-center">
+          <div className="space-y-4 pt-6 text-center" suppressHydrationWarning>
             <div className="h-px w-full bg-border" />
             <p className="font-sans text-base font-light text-muted-foreground">
               {isLogin ? "¿No tienes una cuenta?" : "¿Ya tienes una cuenta?"}{" "}

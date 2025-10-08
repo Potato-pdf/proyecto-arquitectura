@@ -4,27 +4,72 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 import { tokenStorage } from "@/lib/store/token.storage"
-import { useAuth } from "@/lib/hooks/useAuth"
+import { authApi } from "@/lib/api/auth.api"
 
 export default function WelcomePage() {
   const router = useRouter()
-  const { user, loading } = useAuth()
   const [mounted, setMounted] = useState(false)
+  const [isChecking, setIsChecking] = useState(true)
+  const [user, setUser] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     setMounted(true)
   }, [])
 
   useEffect(() => {
-    if (mounted && !loading) {
-      const token = tokenStorage.getToken()
-      if (!token) {
+    if (!mounted) return
+
+    const token = tokenStorage.getToken()
+    if (!token) {
+      router.push('/')
+      return
+    }
+
+    // Validar token manualmente
+    const validateToken = async () => {
+      try {
+        const profile = await authApi.getProfile(token)
+        setUser(profile)
+        setIsChecking(false)
+      } catch (error) {
+        tokenStorage.removeToken()
         router.push('/')
+      } finally {
+        setLoading(false)
       }
     }
-  }, [mounted, loading, router])
 
-  if (!mounted || loading) {
+    validateToken()
+  }, [mounted, router])
+
+  useEffect(() => {
+    if (!mounted) return
+
+    const token = tokenStorage.getToken()
+    if (!token) {
+      router.push('/')
+      return
+    }
+
+    // Validar token manualmente
+    const validateToken = async () => {
+      try {
+        const profile = await authApi.getProfile(token)
+        setUser(profile)
+        setIsChecking(false)
+      } catch (error) {
+        tokenStorage.removeToken()
+        router.push('/')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    validateToken()
+  }, [mounted, router])
+
+  if (!mounted || loading || isChecking) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-white">
         <p className="text-2xl font-light text-black">Cargando...</p>

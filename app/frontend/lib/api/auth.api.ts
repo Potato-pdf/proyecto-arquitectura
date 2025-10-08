@@ -46,12 +46,17 @@ export class AuthApiClient {
   }
 
   async getProfile(token: string): Promise<User> {
-    return this.request<User>('/auth/profile', {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
+    try {
+      return this.request<User>('/auth/profile', {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+    } catch (error) {
+      // Silenciosamente rechazar si no está autorizado
+      throw error
+    }
   }
 
   async validateToken(token: string): Promise<{ valid: boolean }> {

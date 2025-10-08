@@ -12,7 +12,9 @@ export default function LoginPage() {
   const handleSuccess = () => {
     if (isLogin) {
       // Después del login, redirigir a welcome
-      router.push('/welcome')
+      setTimeout(() => {
+        router.push('/welcome')
+      }, 100)
     } else {
       // Después del registro, cambiar a login
       setIsLogin(true)
@@ -43,34 +45,31 @@ export default function LoginPage() {
             <div className="absolute inset-0 bg-gradient-to-br from-foreground/5 via-transparent to-accent/10 backdrop-blur-[2px]" />
 
             {/* Decorative graffiti elements */}
-            <div className="absolute inset-0 flex items-center justify-center p-12">
-              <div className="space-y-8 text-center">
-
-                {/* Artistic sketch decoration */}
-                <div className="mx-auto h-32 w-32 opacity-30">
-                  <svg viewBox="0 0 100 100" className="text-accent">
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r="45"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1"
-                      strokeDasharray="3,3"
-                      className="animate-[spin_20s_linear_infinite]"
-                    />
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r="35"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1"
-                      strokeDasharray="5,5"
-                      className="animate-[spin_15s_linear_infinite_reverse]"
-                    />
-                  </svg>
-                </div>
+            <div className="absolute inset-0 flex items-center justify-center p-12" suppressHydrationWarning>
+              {/* Artistic sketch decoration */}
+              <div className="mx-auto h-32 w-32 opacity-30" suppressHydrationWarning>
+                <svg viewBox="0 0 100 100" className="text-accent">
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="45"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1"
+                    strokeDasharray="3,3"
+                    className="animate-[spin_20s_linear_infinite]"
+                  />
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="35"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1"
+                    strokeDasharray="5,5"
+                    className="animate-[spin_15s_linear_infinite_reverse]"
+                  />
+                </svg>
               </div>
             </div>
           </div>

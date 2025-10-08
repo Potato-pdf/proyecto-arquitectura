@@ -10,7 +10,7 @@ import { authApi } from '../api/auth.api'
 import { tokenStorage } from '../store/token.storage'
 import type { User, LoginCredentials, RegisterData } from '../types/auth.types'
 
-export function useAuth() {
+export function useAuth(skipValidation = false) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -27,16 +27,27 @@ export function useAuth() {
       const profile = await authApi.getProfile(token)
       setUser(profile)
     } catch (err) {
+      // Token inválido, eliminarlo
       tokenStorage.removeToken()
       setUser(null)
+      // No mostrar error en consola, es normal que expire
     } finally {
       setLoading(false)
     }
   }, [])
 
   useEffect(() => {
-    validateSession()
-  }, [validateSession])
+    if (!skipValidation) {
+      const token = tokenStorage.getToken()
+      if (token) {
+        validateSession()
+      } else {
+        setLoading(false)
+      }
+    } else {
+      setLoading(false)
+    }
+  }, [validateSession, skipValidation])
 
   const login = async (credentials: LoginCredentials) => {
     setLoading(true)
