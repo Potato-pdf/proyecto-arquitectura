@@ -1,8 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import AuthForm from "@/components/auth-form"
-import ArtisticBackground from "@/components/artistic-background"
+import AuthForm from "/components/auth-form"
+import ArtisticBackground from "/components/artistic-background"
 
 export default function LoginPage() {
   const [isLogin, setIsLogin] = useState(true)
