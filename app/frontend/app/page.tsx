@@ -33,12 +33,6 @@ export default function LoginPage() {
             {/* Decorative graffiti elements */}
             <div className="absolute inset-0 flex items-center justify-center p-12">
               <div className="space-y-8 text-center">
-                <h2 className="font-sans text-6xl font-extralight tracking-tight text-foreground/80">
-                  {isLogin ? "Bienvenido" : "Únete"}
-                </h2>
-                <p className="font-sans text-xl font-light tracking-wide text-foreground/60">
-                  {isLogin ? "Tu espacio creativo te espera" : "Comienza tu viaje creativo"}
-                </p>
 
                 {/* Artistic sketch decoration */}
                 <div className="mx-auto h-32 w-32 opacity-30">

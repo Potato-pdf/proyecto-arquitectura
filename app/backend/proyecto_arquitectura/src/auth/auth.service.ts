@@ -13,24 +13,18 @@ export class AuthService {
   ) {}
 
   async register(registerDto: RegisterDto) {
-    // Verificar si el usuario ya existe
     const existingUser = await this.usersService.findOneByEmail(registerDto.email);
     
     if (existingUser) {
       throw new ConflictException('El email ya está registrado');
     }
-
-    // Hashear la contraseña
     const hashedPassword = await bcrypt.hash(registerDto.password, 10);
-
-    // Crear el usuario
     const user = await this.usersService.create({
       ...registerDto,
       password: hashedPassword,
       rol: 'user',
     });
 
-    // Generar token
     const payload = { sub: user.id, email: user.email };
     const token = this.jwtService.sign(payload);
 
@@ -46,14 +40,11 @@ export class AuthService {
   }
 
   async login(loginDto: LoginDto) {
-    // Buscar usuario por email
     const user = await this.usersService.findOneByEmail(loginDto.email);
-
     if (!user) {
       throw new UnauthorizedException('Credenciales inválidas');
     }
 
-    // Verificar contraseña
     const isPasswordValid = await bcrypt.compare(loginDto.password, user.password);
 
     if (!isPasswordValid) {
