@@ -1,11 +1,23 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import AuthForm from "@/components/auth-form"
 import ArtisticBackground from "@/components/artistic-background"
 
 export default function LoginPage() {
   const [isLogin, setIsLogin] = useState(true)
+  const router = useRouter()
+
+  const handleSuccess = () => {
+    if (isLogin) {
+      // Después del login, redirigir a welcome
+      router.push('/welcome')
+    } else {
+      // Después del registro, cambiar a login
+      setIsLogin(true)
+    }
+  }
 
   return (
     <main className="relative min-h-screen w-full overflow-hidden bg-background">
@@ -17,7 +29,7 @@ export default function LoginPage() {
             isLogin ? "md:order-1" : "md:order-2"
           }`}
         >
-          <AuthForm isLogin={isLogin} onToggle={() => setIsLogin(!isLogin)} />
+          <AuthForm isLogin={isLogin} onToggle={() => setIsLogin(!isLogin)} onSuccess={handleSuccess} />
         </div>
 
         {/* Transparent image panel - switches position based on isLogin */}

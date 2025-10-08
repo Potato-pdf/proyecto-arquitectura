@@ -16,7 +16,8 @@ interface AuthFormProps {
 export default function AuthForm({ isLogin, onToggle, onSuccess }: AuthFormProps) {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [name, setName] = useState("")
+  const [firstName, setFirstName] = useState("")
+  const [lastName, setLastName] = useState("")
   const [focusedField, setFocusedField] = useState<string | null>(null)
   
   const { login, register, loading, error } = useAuth()
@@ -28,7 +29,13 @@ export default function AuthForm({ isLogin, onToggle, onSuccess }: AuthFormProps
       if (isLogin) {
         await login({ email, password })
       } else {
-        await register({ email, password, name })
+        // Concatenar firstName y lastName para enviar como name
+        const fullName = `${firstName} ${lastName}`.trim()
+        await register({ 
+          email, 
+          password, 
+          name: fullName 
+        })
       }
       onSuccess?.()
     } catch (err) {
@@ -57,32 +64,61 @@ export default function AuthForm({ isLogin, onToggle, onSuccess }: AuthFormProps
 
           <form onSubmit={handleSubmit} className="space-y-8">
             {!isLogin && (
-              <div className="space-y-3">
-                <Label htmlFor="name" className="font-sans text-base font-light tracking-wide text-foreground">
-                  Nombre completo
-                </Label>
-                <div className="relative">
-                  <Input
-                    id="name"
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    onFocus={() => setFocusedField("name")}
-                    onBlur={() => setFocusedField(null)}
-                    className="border-0 border-b-3 border-border bg-transparent px-0 py-4 font-sans text-lg font-light tracking-wide text-foreground transition-colors focus-visible:border-accent focus-visible:ring-0"
-                    placeholder="Tu nombre"
-                    required
-                  />
-                  <div
-                    className={`absolute bottom-0 left-0 h-1 bg-accent transition-all duration-300 ${
-                      focusedField === "name" ? "w-full" : "w-0"
-                    }`}
-                    style={{
-                      boxShadow: focusedField === "name" ? "0 0 12px rgba(88, 166, 255, 0.4)" : "none",
-                    }}
-                  />
+              <>
+                <div className="space-y-3">
+                  <Label htmlFor="firstName" className="font-sans text-base font-light tracking-wide text-foreground">
+                    Nombre
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      id="firstName"
+                      type="text"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      onFocus={() => setFocusedField("firstName")}
+                      onBlur={() => setFocusedField(null)}
+                      className="border-0 border-b-3 border-border bg-transparent px-0 py-4 font-sans text-lg font-light tracking-wide text-foreground transition-colors focus-visible:border-accent focus-visible:ring-0"
+                      placeholder="Tu nombre"
+                      required
+                    />
+                    <div
+                      className={`absolute bottom-0 left-0 h-1 bg-accent transition-all duration-300 ${
+                        focusedField === "firstName" ? "w-full" : "w-0"
+                      }`}
+                      style={{
+                        boxShadow: focusedField === "firstName" ? "0 0 12px rgba(88, 166, 255, 0.4)" : "none",
+                      }}
+                    />
+                  </div>
                 </div>
-              </div>
+
+                <div className="space-y-3">
+                  <Label htmlFor="lastName" className="font-sans text-base font-light tracking-wide text-foreground">
+                    Apellido
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      id="lastName"
+                      type="text"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      onFocus={() => setFocusedField("lastName")}
+                      onBlur={() => setFocusedField(null)}
+                      className="border-0 border-b-3 border-border bg-transparent px-0 py-4 font-sans text-lg font-light tracking-wide text-foreground transition-colors focus-visible:border-accent focus-visible:ring-0"
+                      placeholder="Tu apellido"
+                      required
+                    />
+                    <div
+                      className={`absolute bottom-0 left-0 h-1 bg-accent transition-all duration-300 ${
+                        focusedField === "lastName" ? "w-full" : "w-0"
+                      }`}
+                      style={{
+                        boxShadow: focusedField === "lastName" ? "0 0 12px rgba(88, 166, 255, 0.4)" : "none",
+                      }}
+                    />
+                  </div>
+                </div>
+              </>
             )}
 
             <div className="space-y-3">
