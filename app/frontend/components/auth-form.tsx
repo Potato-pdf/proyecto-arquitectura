@@ -24,8 +24,8 @@ export default function AuthForm({ isLogin, onToggle }: AuthFormProps) {
 
   return (
     <div className="flex h-full w-full items-center justify-center bg-background">
-      <div className="relative w-full px-8 md:px-16 lg:px-20">
-        <div className="space-y-10 rounded-sm bg-background p-12 md:p-16 lg:p-20">
+      <div className="relative w-full h-full flex items-center justify-center px-8 md:px-16 lg:px-20">
+        <div className="space-y-10 w-full max-w-2xl">
           <div className="space-y-4 text-center">
             <h1 className="font-sans text-5xl font-extralight tracking-tight text-foreground md:text-6xl lg:text-7xl">
               {isLogin ? "Bienvenido" : "Crear Cuenta"}
