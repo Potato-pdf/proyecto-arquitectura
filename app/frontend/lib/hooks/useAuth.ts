@@ -24,7 +24,7 @@ export function useAuth(skipValidation = false) {
     }
 
     try {
-      const profile = await authApi.getProfile(token)
+      const profile = await authApi.getProfile()
       setUser(profile)
     } catch (err) {
       // Token inválido, eliminarlo
@@ -54,11 +54,25 @@ export function useAuth(skipValidation = false) {
     setError(null)
     
     try {
+      console.log('🔐 Intentando login con:', credentials.email)
       const response = await authApi.login(credentials)
+      console.log('✅ Respuesta del login:', response)
+      
+      if (!response.access_token) {
+        throw new Error('No se recibió el token de acceso')
+      }
+      
+      console.log('💾 Guardando token en localStorage...')
       tokenStorage.setToken(response.access_token)
+      
+      // Verificar que se guardó
+      const savedToken = tokenStorage.getToken()
+      console.log('✅ Token guardado:', savedToken ? 'SÍ' : 'NO')
+      
       setUser(response.user)
       return response
     } catch (err) {
+      console.error('❌ Error en login:', err)
       const message = err instanceof Error ? err.message : 'Error al iniciar sesión'
       setError(message)
       throw err

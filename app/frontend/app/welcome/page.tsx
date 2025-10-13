@@ -8,43 +8,35 @@ import { authApi } from "@/lib/api/auth.api"
 
 export default function WelcomePage() {
   const router = useRouter()
-  const [mounted, setMounted] = useState(false)
-  const [isChecking, setIsChecking] = useState(true)
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    setMounted(true)
-  }, [])
+    const validateSession = async () => {
+      const token = tokenStorage.getToken()
+      
+      if (!token) {
+        router.replace('/')
+        return
+      }
 
-  useEffect(() => {
-    if (!mounted) return
-
-    const token = tokenStorage.getToken()
-    if (!token) {
-      router.push('/')
-      return
-    }
-
-    // Validar token manualmente
-    const validateToken = async () => {
       try {
-        const profile = await authApi.getProfile(token)
+        const profile = await authApi.getProfile()
         setUser(profile)
-        setIsChecking(false)
       } catch (error) {
-        console.error('Error validando token:', error)
+        // Token inválido o expirado
+        console.error('Error validando sesión:', error)
         tokenStorage.removeToken()
-        router.push('/')
+        router.replace('/')
       } finally {
         setLoading(false)
       }
     }
 
-    validateToken()
-  }, [mounted, router])
+    validateSession()
+  }, [router])
 
-  if (!mounted || loading || isChecking) {
+  if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-white">
         <p className="text-2xl font-light text-black">Cargando...</p>

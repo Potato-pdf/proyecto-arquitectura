@@ -12,16 +12,8 @@ export default function LoginPage() {
 
   const handleSuccess = () => {
     if (isLogin) {
-      // Después del login, redirigir a welcome
-      // Verificar que el token se haya guardado antes de redirigir
-      const token = tokenStorage.getToken()
-      if (token) {
-        setTimeout(() => {
-          router.push('/welcome')
-        }, 2000)
-      } else {
-        console.error('No se encontró el token después del login')
-      }
+      // Después del login exitoso, redirigir inmediatamente
+      router.push('/welcome')
     } else {
       // Después del registro, cambiar a login
       setIsLogin(true)
