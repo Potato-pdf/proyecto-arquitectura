@@ -5,6 +5,7 @@
 
 import { API_CONFIG } from './config'
 import type { LoginCredentials, RegisterData, AuthResponse, User } from '../types/auth.types'
+import { tokenStorage } from '../store/token.storage'
 
 export class AuthApiClient {
   private async request<T>(
@@ -13,10 +14,14 @@ export class AuthApiClient {
   ): Promise<T> {
     const url = `${API_CONFIG.baseURL}${endpoint}`
     
+    // Obtener el token del almacenamiento usando tokenStorage
+    const token = tokenStorage.getToken()
+    
     const response = await fetch(url, {
       ...options,
       headers: {
         ...API_CONFIG.headers,
+        ...(token && { Authorization: `Bearer ${token}` }),
         ...options.headers,
       },
     })

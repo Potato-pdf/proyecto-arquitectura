@@ -26,18 +26,25 @@ export default function AuthForm({ isLogin, onToggle, onSuccess }: AuthFormProps
     e.preventDefault()
 
     try {
+      let response;
       if (isLogin) {
-        await login({ email, password })
+        response = await login({ email, password })
       } else {
         // Concatenar firstName y lastName para enviar como name
         const fullName = `${firstName} ${lastName}`.trim()
-        await register({ 
+        response = await register({ 
           email, 
           password, 
           name: fullName 
         })
       }
-      onSuccess?.()
+      
+      // Verificar que la respuesta contenga el token antes de llamar a onSuccess
+      if (response?.access_token) {
+        onSuccess?.()
+      } else {
+        console.error('No se recibió el token en la respuesta')
+      }
     } catch (err) {
       // Error ya está manejado en el hook
       console.error('Error de autenticación:', err)
