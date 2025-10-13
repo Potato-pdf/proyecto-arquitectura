@@ -1,5 +1,16 @@
 # Docker Commands - Proyecto Arquitectura
 
+## ⚙️ Configuración Inicial
+
+Antes de iniciar el proyecto, asegúrate de tener el archivo `.env` configurado:
+
+```bash
+# Si no existe, copia el archivo de ejemplo
+cp .env.example .env
+```
+
+**Nota:** Todas las variables de entorno están centralizadas en el archivo `.env` de la raíz. Ver `ENV_CONFIG.md` para más detalles.
+
 ## 🐳 Comandos Docker para la Base de Datos
 
 ### Iniciar la base de datos
