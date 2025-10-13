@@ -1,10 +1,9 @@
-import type { UUID } from "crypto";
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
 export class User {
-    @PrimaryGeneratedColumn()
-    id: UUID;
+    @PrimaryGeneratedColumn('uuid')
+    id: string;
 
     @Column({ type: "varchar", length: 255 , unique: true, nullable: false })
     email: string;

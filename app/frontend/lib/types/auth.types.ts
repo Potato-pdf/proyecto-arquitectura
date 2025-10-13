@@ -4,7 +4,7 @@
  */
 
 export interface User {
-  id: number
+  id: string // UUID
   email: string
   name: string
 }
