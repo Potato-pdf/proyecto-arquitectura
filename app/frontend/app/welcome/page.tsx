@@ -33,32 +33,7 @@ export default function WelcomePage() {
         setUser(profile)
         setIsChecking(false)
       } catch (error) {
-        tokenStorage.removeToken()
-        router.push('/')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    validateToken()
-  }, [mounted, router])
-
-  useEffect(() => {
-    if (!mounted) return
-
-    const token = tokenStorage.getToken()
-    if (!token) {
-      router.push('/')
-      return
-    }
-
-    // Validar token manualmente
-    const validateToken = async () => {
-      try {
-        const profile = await authApi.getProfile(token)
-        setUser(profile)
-        setIsChecking(false)
-      } catch (error) {
+        console.error('Error validando token:', error)
         tokenStorage.removeToken()
         router.push('/')
       } finally {
