@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, ConflictException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserDAO } from './DAO/users.dao';
@@ -28,7 +28,13 @@ export class UsersService {
     return this.userDAO.getUsuarioByName(name);
   }
   
-  update(id: string, updateUserDto: UpdateUserDto) {
+  async update(id: string, updateUserDto: UpdateUserDto) {
+    if (updateUserDto.name) {
+      const existingUser = await this.userDAO.getUsuarioByName(updateUserDto.name);
+      if (existingUser && existingUser.id !== id) {
+        throw new ConflictException('El nombre de usuario ya está en uso');
+      }
+    }
     return this.userDAO.updateUsuario(id, updateUserDto);
   }
 

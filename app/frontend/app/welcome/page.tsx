@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
+import Link from "next/link" // Importar Link
 import { tokenStorage } from "@/lib/store/token.storage"
 import { authApi } from "@/lib/api/auth.api"
 
@@ -139,6 +140,10 @@ export default function WelcomePage() {
                     </div>
                   </div>
                 </div>
+              </div>
+
+              <div className="text-center sm:text-left pt-4 animate-fade-in-delay-2">
+                <Link href="/edit-profile" className="text-emerald-600 hover:underline inline-block">Editar Perfil</Link>
               </div>
 
               {/* Action buttons */}

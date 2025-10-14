@@ -99,18 +99,36 @@ export function useAuth(skipValidation = false) {
     }
   }
 
+  const updateProfile = async (id: string, data: Partial<User>) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const updatedUser = await authApi.updateProfile(id, data);
+      setUser(updatedUser);
+      return updatedUser;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error al actualizar el perfil';
+      setError(message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const logout = () => {
     tokenStorage.removeToken()
     setUser(null)
+    setLoading(false)
   }
 
   return {
     user,
-    loading,
-    error,
     login,
     register,
     logout,
+    updateProfile,
+    loading,
+    error,
     isAuthenticated: !!user,
   }
 }

@@ -61,6 +61,13 @@ export class AuthApiClient {
       method: 'GET',
     })
   }
+
+  async updateProfile(id: string, data: Partial<User>): Promise<User> {
+    return this.request<User>(`/users/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    })
+  }
 }
 
 export const authApi = new AuthApiClient()
