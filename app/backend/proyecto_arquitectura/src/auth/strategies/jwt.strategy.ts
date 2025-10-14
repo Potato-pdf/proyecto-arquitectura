@@ -3,9 +3,10 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 import { UsersService } from '../../users/users.service';
+import { User } from '../../users/entities/user.entity';
 
 export interface JwtPayload {
-  sub: string; // UUID como string
+  sub: string;
   email: string;
 }
 
@@ -22,8 +23,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: JwtPayload) {
-    const user = await this.usersService.findOneByEmail(payload.email);
+  async validate(payload: JwtPayload): Promise<Partial<User>> {
+    const user: User | null = await this.usersService.findOneByEmail(payload.email);
     
     if (!user || !user.isActive) {
       throw new UnauthorizedException('Usuario no autorizado');

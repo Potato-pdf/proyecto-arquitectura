@@ -28,8 +28,6 @@ export default function AuthForm({ isLogin, onToggle, onSuccess }: AuthFormProps
     try {
       if (isLogin) {
         await login({ email, password })
-        // El hook ya guarda el token, llamar a onSuccess directamente
-        onSuccess?.()
       } else {
         // Concatenar firstName y lastName para enviar como name
         const fullName = `${firstName} ${lastName}`.trim()
@@ -38,8 +36,8 @@ export default function AuthForm({ isLogin, onToggle, onSuccess }: AuthFormProps
           password, 
           name: fullName 
         })
-        onSuccess?.()
       }
+      onSuccess?.()
     } catch (err) {
       // Error ya está manejado en el hook
       console.error('Error de autenticación:', err)

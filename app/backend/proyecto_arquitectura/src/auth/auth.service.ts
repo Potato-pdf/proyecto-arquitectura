@@ -4,6 +4,7 @@ import { UsersService } from '../users/users.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import * as bcrypt from 'bcrypt';
+import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class AuthService {
@@ -19,45 +20,41 @@ export class AuthService {
       throw new ConflictException('El email ya está registrado');
     }
     const hashedPassword = await bcrypt.hash(registerDto.password, 10);
-    const user = await this.usersService.create({
+    const user: User = await this.usersService.create({
       ...registerDto,
       password: hashedPassword,
       rol: 'user',
     });
 
-    const payload = { sub: user.id, email: user.email };
+    const { password: _, ...userWithoutPassword } = user;
+    const payload = { sub: userWithoutPassword.id, email: userWithoutPassword.email };
     const token = this.jwtService.sign(payload);
 
     return {
       access_token: token,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        rol: user.rol,
-      },
+      user: userWithoutPassword,
     };
   }
 
   async login(loginDto: LoginDto) {
-    const user = await this.usersService.findOneByEmail(loginDto.email);
+    const user: User | null = await this.usersService.findOneByEmail(loginDto.email);
     if (!user) {
       throw new UnauthorizedException('Credenciales inválidas');
     }
 
-    const isPasswordValid = await bcrypt.compare(loginDto.password, user.password);
+    const isPasswordValid = await bcrypt.compare(loginDto.password, user!.password);
 
     if (!isPasswordValid) {
       throw new UnauthorizedException('Credenciales inválidas');
     }
 
     // Verificar si el usuario está activo
-    if (!user.isActive) {
+    if (!user!.isActive) {
       throw new UnauthorizedException('Usuario inactivo');
     }
 
     // Generar token
-    const payload = { sub: user.id, email: user.email };
+    const payload = { sub: user!.id, email: user!.email };
     const token = this.jwtService.sign(payload);
 
     return {
@@ -71,8 +68,8 @@ export class AuthService {
     };
   }
 
-  async validateUser(email: string) {
-    const user = await this.usersService.findOneByEmail(email);
+  async validateUser(email: string): Promise<Partial<User> | null> {
+    const user: User | null = await this.usersService.findOneByEmail(email);
     
     if (!user || !user.isActive) {
       return null;
