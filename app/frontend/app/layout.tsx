@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import { GeistSans } from "geist/font/sans"
+// @ts-ignore: Allow side-effect CSS import without type declarations
 import "./globals.css"
 
 export const metadata: Metadata = {

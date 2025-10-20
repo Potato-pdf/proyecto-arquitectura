@@ -19,27 +19,47 @@ export default function AuthForm({ isLogin, onToggle, onSuccess }: AuthFormProps
   const [firstName, setFirstName] = useState("")
   const [lastName, setLastName] = useState("")
   const [focusedField, setFocusedField] = useState<string | null>(null)
+  const [formError, setFormError] = useState<string | null>(null)
   
   const { login, register, loading, error } = useAuth(true) // Skip validation en login
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setFormError(null)
 
     try {
       if (isLogin) {
+        // login
         await login({ email, password })
       } else {
-        // Concatenar firstName y lastName para enviar como name
+        // Registro: validaciones cliente
         const fullName = `${firstName} ${lastName}`.trim()
-        await register({ 
-          email, 
-          password, 
-          name: fullName 
+        if (fullName.length === 0) {
+          setFormError('El nombre es obligatorio')
+          return
+        }
+        if (fullName.length > 30) {
+          setFormError('El nombre debe tener como máximo 30 caracteres')
+          return
+        }
+        if (password.length < 6) {
+          setFormError('La contraseña debe tener al menos 6 caracteres')
+          return
+        }
+
+        await register({
+          email,
+          password,
+          name: fullName,
+          rol: 'user',
         })
       }
+
       onSuccess?.()
     } catch (err) {
-      // Error ya está manejado en el hook
+      // Mostrar mensaje localmente si el hook no lo hizo
+      const message = err instanceof Error ? err.message : 'Error de autenticación'
+      setFormError(message)
       console.error('Error de autenticación:', err)
     }
   }
@@ -58,6 +78,11 @@ export default function AuthForm({ isLogin, onToggle, onSuccess }: AuthFormProps
             {error && (
               <p className="font-sans text-sm font-normal text-red-500 bg-red-50 dark:bg-red-950/20 py-2 px-4 rounded">
                 {error}
+              </p>
+            )}
+            {formError && (
+              <p className="font-sans text-sm font-normal text-red-500 bg-red-50 dark:bg-red-950/20 py-2 px-4 rounded">
+                {formError}
               </p>
             )}
           </div>

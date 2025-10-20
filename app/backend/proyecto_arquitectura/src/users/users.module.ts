@@ -4,11 +4,12 @@ import { UsersService } from './users.service';
 import { UsersController } from './users.controller';
 import { User } from './entities/user.entity';
 import { UserDAO } from './DAO/users.dao';
+import { UsuariosCQRS } from './cqrs/UsuariosCQRS';
 
 @Module({
   imports: [TypeOrmModule.forFeature([User])],
   controllers: [UsersController],
-  providers: [UsersService, UserDAO],
-  exports: [UsersService, UserDAO],
+  providers: [UsersService, UserDAO, UsuariosCQRS],
+  exports: [UsersService, UserDAO, UsuariosCQRS],
 })
 export class UsersModule {}

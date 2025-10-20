@@ -86,6 +86,16 @@ export function useAuth(skipValidation = false) {
     setError(null)
     
     try {
+      // Validaciones cliente adicionales
+      if (!data.name || data.name.trim().length === 0) {
+        throw new Error('El nombre es obligatorio')
+      }
+      if (data.name.length > 30) {
+        throw new Error('El nombre debe tener como máximo 30 caracteres')
+      }
+      if (!data.password || data.password.length < 6) {
+        throw new Error('La contraseña debe tener al menos 6 caracteres')
+      }
       const response = await authApi.register(data)
       tokenStorage.setToken(response.access_token)
       setUser(response.user)
@@ -99,10 +109,21 @@ export function useAuth(skipValidation = false) {
     }
   }
 
-  const updateProfile = async (id: string, data: Partial<User>) => {
+  const updateProfile = async (id: string, data: Partial<User> & { password?: string }) => {
     setLoading(true);
     setError(null);
     try {
+      if (data.name !== undefined) {
+        if (data.name.trim().length === 0) {
+          throw new Error('El nombre no puede estar vacío')
+        }
+        if (data.name.length > 30) {
+          throw new Error('El nombre debe tener como máximo 30 caracteres')
+        }
+      }
+      if (data.password !== undefined && data.password !== '' && data.password.length < 6) {
+        throw new Error('La contraseña debe tener al menos 6 caracteres')
+      }
       const updatedUser = await authApi.updateProfile(id, data);
       setUser(updatedUser);
       return updatedUser;

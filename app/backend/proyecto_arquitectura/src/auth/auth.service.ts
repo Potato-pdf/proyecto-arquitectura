@@ -19,12 +19,11 @@ export class AuthService {
     if (existingUser) {
       throw new ConflictException('El email ya está registrado');
     }
-    const hashedPassword = await bcrypt.hash(registerDto.password, 10);
+    // No hashear aquí: el DAO es el responsable de hashear la contraseña
     const user: User = await this.usersService.create({
       ...registerDto,
-      password: hashedPassword,
       rol: 'user',
-    });
+    } as any);
 
     const { password: _, ...userWithoutPassword } = user;
     const payload = { sub: userWithoutPassword.id, email: userWithoutPassword.email };
