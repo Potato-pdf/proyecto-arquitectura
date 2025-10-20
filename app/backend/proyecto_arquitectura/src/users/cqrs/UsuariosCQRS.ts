@@ -52,6 +52,14 @@ export class UsuariosCQRS {
       }
     }
 
+    // Si se quiere cambiar el email, verificar disponibilidad
+    if (user.email) {
+      const existingByEmail = await this.userDAO.getUsuarioByEmail(user.email);
+      if (existingByEmail && existingByEmail.id !== id) {
+        throw new ConflictException('El email ya está en uso');
+      }
+    }
+
     return this.userDAO.updateUsuario(id, user as UpdateUserDto);
   }
 }

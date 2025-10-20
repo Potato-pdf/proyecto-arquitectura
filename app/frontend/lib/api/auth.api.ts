@@ -27,12 +27,27 @@ export class AuthApiClient {
     })
 
     if (!response.ok) {
-      const error = await response.json().catch(() => ({
-        message: 'Error en la petición',
-      }))
-      throw new Error(error.message || 'Error desconocido')
+      // Try to parse JSON error body, otherwise fallback to plain text
+      let errorBody: any = null
+      try {
+        errorBody = await response.json()
+      } catch (e) {
+        try {
+          const text = await response.text()
+          errorBody = { message: text }
+        } catch (ee) {
+          errorBody = { message: 'Error en la petición' }
+        }
+      }
+
+      const message = (errorBody && (errorBody.message || errorBody.error || JSON.stringify(errorBody))) || `HTTP ${response.status}`
+      const err = new Error(message)
+      // annotate with status for downstream handling
+      ;(err as any).status = response.status
+      throw err
     }
 
+    // Parse and return JSON body
     return response.json()
   }
 

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, ILike } from 'typeorm';
 import { CreateUserDto } from '../dto/create-user.dto';
@@ -57,9 +57,24 @@ export class UserDAO implements IUserDAO {
       rol: userData.rol || 'user',
     });
 
-    const savedUser = await this.userRepository.save(user);
-    // No excluir la contraseña aquí, ya que se necesita para la validación en auth.service.ts
-    return savedUser;
+    try {
+      const savedUser = await this.userRepository.save(user);
+      // No excluir la contraseña aquí, ya que se necesita para la validación en auth.service.ts
+      return savedUser;
+    } catch (err: any) {
+      // Detect duplicate key violation from Postgres
+      if (err && err.code === '23505') {
+        const detail = (err.detail || '').toString().toLowerCase()
+        if (detail.includes('email')) {
+          throw new ConflictException('El email ya está en uso')
+        }
+        if (detail.includes('name')) {
+          throw new ConflictException('El nombre de usuario ya está en uso')
+        }
+        throw new ConflictException('Registro duplicado')
+      }
+      throw err
+    }
   }
 
   async updateUsuario(id: string, updateUserDto: UpdateUserDto): Promise<User> {
@@ -70,7 +85,22 @@ export class UserDAO implements IUserDAO {
       updateData['password'] = hashedPassword;
     }
 
-    const updateResult = await this.userRepository.update(id, updateData);
+    let updateResult
+    try {
+      updateResult = await this.userRepository.update(id, updateData);
+    } catch (err: any) {
+      if (err && err.code === '23505') {
+        const detail = (err.detail || '').toString().toLowerCase()
+        if (detail.includes('email')) {
+          throw new ConflictException('El email ya está en uso')
+        }
+        if (detail.includes('name')) {
+          throw new ConflictException('El nombre de usuario ya está en uso')
+        }
+        throw new ConflictException('Registro duplicado')
+      }
+      throw err
+    }
 
     if (updateResult.affected === 0) {
       throw new NotFoundException(`Usuario con id ${id} no encontrado`);
