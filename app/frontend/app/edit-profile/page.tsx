@@ -15,6 +15,7 @@ export default function EditProfilePage() {
   const [message, setMessage] = useState<string | null>(null)
   const [fieldError, setFieldError] = useState<'email' | 'name' | null>(null)
   const [fieldMessage, setFieldMessage] = useState<string | null>(null)
+  const [shake, setShake] = useState(false)
 
   useEffect(() => {
     if (user) setName(user.name)
@@ -33,14 +34,23 @@ export default function EditProfilePage() {
     if (lower.includes('email') && lower.includes('uso') || lower.includes('email') && lower.includes('exists')) {
       setFieldError('email')
       setFieldMessage(error)
+      setShake(true)
     } else if (lower.includes('nombre') || lower.includes('name') && lower.includes('uso')) {
       setFieldError('name')
       setFieldMessage(error)
+      setShake(true)
     } else {
       setFieldError(null)
       setFieldMessage(error)
     }
   }, [error])
+
+  // disable shake after short time
+  useEffect(() => {
+    if (!shake) return
+    const t = setTimeout(() => setShake(false), 600)
+    return () => clearTimeout(t)
+  }, [shake])
 
   if (!user) {
     return <div className="p-8">Debes iniciar sesión para editar tu perfil.</div>
@@ -117,13 +127,31 @@ export default function EditProfilePage() {
               <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4">
                 <div>
                   <label className="block mb-2 text-sm font-medium text-gray-700">Nombre</label>
-                  <input type="text" value={name} onChange={(e) => { setName(e.target.value); if (fieldError === 'name') setFieldError(null); }} required className={`w-full p-3 rounded-xl border-2 ${fieldError === 'name' ? 'border-red-500' : 'border-emerald-100'} focus:outline-none focus:ring-2 focus:ring-emerald-200`} />
+                  <div className={`relative ${shake && fieldError === 'name' ? 'animate-shake' : ''}`}>
+                    <input type="text" value={name} onChange={(e) => { setName(e.target.value); if (fieldError === 'name') setFieldError(null); }} required className={`w-full p-3 rounded-xl border-2 ${fieldError === 'name' ? 'border-red-500' : 'border-emerald-100'} focus:outline-none focus:ring-2 focus:ring-emerald-200`} />
+                    {fieldError === 'name' && (
+                      <div className="absolute right-3 top-3 text-red-500" aria-hidden>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </div>
+                    )}
+                  </div>
                   {fieldError === 'name' && fieldMessage && <p className="mt-2 text-sm text-red-600">{fieldMessage}</p>}
                 </div>
 
                 <div>
                   <label className="block mb-2 text-sm font-medium text-gray-700">Email</label>
-                  <input type="email" value={email} onChange={(e) => { setEmail(e.target.value); if (fieldError === 'email') setFieldError(null); }} required className={`w-full p-3 rounded-xl border-2 ${fieldError === 'email' ? 'border-red-500' : 'border-emerald-100'} focus:outline-none focus:ring-2 focus:ring-emerald-200`} />
+                  <div className={`relative ${shake && fieldError === 'email' ? 'animate-shake' : ''}`}>
+                    <input type="email" value={email} onChange={(e) => { setEmail(e.target.value); if (fieldError === 'email') setFieldError(null); }} required className={`w-full p-3 rounded-xl border-2 ${fieldError === 'email' ? 'border-red-500' : 'border-emerald-100'} focus:outline-none focus:ring-2 focus:ring-emerald-200`} />
+                    {fieldError === 'email' && (
+                      <div className="absolute right-3 top-3 text-red-500" aria-hidden>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </div>
+                    )}
+                  </div>
                   {fieldError === 'email' && fieldMessage && <p className="mt-2 text-sm text-red-600">{fieldMessage}</p>}
                 </div>
 
