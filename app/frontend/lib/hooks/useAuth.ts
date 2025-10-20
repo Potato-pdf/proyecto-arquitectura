@@ -128,9 +128,24 @@ export function useAuth(skipValidation = false) {
       setUser(updatedUser);
       return updatedUser;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error al actualizar el perfil';
+      // Map common DB/backend errors (duplicate key) to friendly messages
+      let message = err instanceof Error ? err.message : String(err || 'Error al actualizar el perfil')
+      const lower = message.toLowerCase()
+
+      // Postgres duplicate key messages often contain 'duplicate key' or 'Key (email)=(...) already exists.'
+      if (/key\s*\(email\)|email\).*already exists|duplicate key value.*\be?mail\b/i.test(message) || /already exists/.test(lower) && lower.includes('email')) {
+        message = 'El email ya está en uso'
+      } else if (/key\s*\(name\)|name\).*already exists|duplicate key value.*\bname\b/i.test(message) || /already exists/.test(lower) && lower.includes('name')) {
+        message = 'El nombre ya está en uso'
+      } else if (/duplicate key/i.test(message) || /unique constraint/i.test(lower)) {
+        // generic duplicate
+        if (lower.includes('email')) message = 'El email ya está en uso'
+        else if (lower.includes('name')) message = 'El nombre ya está en uso'
+        else message = 'Ya existe un registro con los mismos datos'
+      }
+
       setError(message);
-      throw err;
+      throw new Error(message);
     } finally {
       setLoading(false);
     }

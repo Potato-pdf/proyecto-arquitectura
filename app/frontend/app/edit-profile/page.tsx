@@ -10,12 +10,37 @@ export default function EditProfilePage() {
   const router = useRouter()
   const { user, updateProfile, loading, error } = useAuth(false)
   const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [message, setMessage] = useState<string | null>(null)
+  const [fieldError, setFieldError] = useState<'email' | 'name' | null>(null)
+  const [fieldMessage, setFieldMessage] = useState<string | null>(null)
 
   useEffect(() => {
     if (user) setName(user.name)
+    if (user) setEmail(user.email)
   }, [user])
+
+  // Map hook error to inline field errors (email/name)
+  useEffect(() => {
+    if (!error) {
+      setFieldError(null)
+      setFieldMessage(null)
+      return
+    }
+
+    const lower = error.toLowerCase()
+    if (lower.includes('email') && lower.includes('uso') || lower.includes('email') && lower.includes('exists')) {
+      setFieldError('email')
+      setFieldMessage(error)
+    } else if (lower.includes('nombre') || lower.includes('name') && lower.includes('uso')) {
+      setFieldError('name')
+      setFieldMessage(error)
+    } else {
+      setFieldError(null)
+      setFieldMessage(error)
+    }
+  }, [error])
 
   if (!user) {
     return <div className="p-8">Debes iniciar sesión para editar tu perfil.</div>
@@ -33,13 +58,24 @@ export default function EditProfilePage() {
       setMessage('El nombre debe tener como máximo 30 caracteres')
       return
     }
+    // Email basic validation
+    const emailTrim = email.trim()
+    if (emailTrim.length === 0) {
+      setMessage('El email no puede estar vacío')
+      return
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(emailTrim)) {
+      setMessage('Formato de email inválido')
+      return
+    }
     if (password && password.length > 0 && password.length < 6) {
       setMessage('La contraseña debe tener al menos 6 caracteres')
       return
     }
 
     try {
-      await updateProfile(user.id, { name, password: password || undefined } as any)
+      await updateProfile(user.id, { name, email: email.trim(), password: password || undefined } as any)
       setMessage('Perfil actualizado correctamente')
       setPassword('')
     } catch (err) {
@@ -71,13 +107,24 @@ export default function EditProfilePage() {
             </div>
 
             <div className="bg-white rounded-2xl p-6 border-2 border-emerald-100 shadow-sm">
-              {message && <div className={`mb-4 ${message.includes('correctamente') ? 'text-green-600' : 'text-red-600'}`}>{message}</div>}
-              {error && <div className="mb-4 text-red-600">{error}</div>}
+              {/* Preferir mostrar error del backend (hook) sobre mensajes locales */}
+              {error ? (
+                <div className="mb-4 text-red-600">{error}</div>
+              ) : (
+                message && <div className={`mb-4 ${message.includes('correctamente') ? 'text-green-600' : 'text-red-600'}`}>{message}</div>
+              )}
 
               <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4">
                 <div>
                   <label className="block mb-2 text-sm font-medium text-gray-700">Nombre</label>
-                  <input type="text" value={name} onChange={(e) => setName(e.target.value)} required className="w-full p-3 rounded-xl border-2 border-emerald-100 focus:outline-none focus:ring-2 focus:ring-emerald-200" />
+                  <input type="text" value={name} onChange={(e) => { setName(e.target.value); if (fieldError === 'name') setFieldError(null); }} required className={`w-full p-3 rounded-xl border-2 ${fieldError === 'name' ? 'border-red-500' : 'border-emerald-100'} focus:outline-none focus:ring-2 focus:ring-emerald-200`} />
+                  {fieldError === 'name' && fieldMessage && <p className="mt-2 text-sm text-red-600">{fieldMessage}</p>}
+                </div>
+
+                <div>
+                  <label className="block mb-2 text-sm font-medium text-gray-700">Email</label>
+                  <input type="email" value={email} onChange={(e) => { setEmail(e.target.value); if (fieldError === 'email') setFieldError(null); }} required className={`w-full p-3 rounded-xl border-2 ${fieldError === 'email' ? 'border-red-500' : 'border-emerald-100'} focus:outline-none focus:ring-2 focus:ring-emerald-200`} />
+                  {fieldError === 'email' && fieldMessage && <p className="mt-2 text-sm text-red-600">{fieldMessage}</p>}
                 </div>
 
                 <div>
