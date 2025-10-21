@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, ILike } from 'typeorm';
 import { CreateUserDto } from '../dto/create-user.dto';
@@ -78,6 +78,10 @@ export class UserDAO implements IUserDAO {
   }
 
   async updateUsuario(id: string, updateUserDto: UpdateUserDto): Promise<User> {
+    const uuidRegex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+    if (!uuidRegex.test(id)) {
+      throw new BadRequestException(`Invalid UUID format for user ID: ${id}. Expected a valid UUID.`);
+    }
     const { password, ...updateData } = updateUserDto;
 
     if (password) {

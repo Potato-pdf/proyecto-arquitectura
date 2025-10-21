@@ -2,6 +2,8 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UsrInsertExternoViewModel } from './view_model/UsrInsertExternoViewModel';
+import { UsrPublicoExternoViewModel } from './view_model/UsrPublicoExternoViewModel';
 
 @Controller('users')
 export class UsersController {
@@ -35,6 +37,17 @@ export class UsersController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.usersService.remove(id);
+  }
+
+  // Endpoints con ViewModels externos
+  @Post('registro-externo')
+  createExterno(@Body() usrInsertExterno: UsrInsertExternoViewModel) {
+    return this.usersService.createExterno(usrInsertExterno);
+  }
+
+  @Patch('actualizar-externo/:id')
+  updateExterno(@Param('id') id: string, @Body() usrPublicoExterno: UsrPublicoExternoViewModel) {
+    return this.usersService.updateExterno(id, usrPublicoExterno);
   }
   
 }
