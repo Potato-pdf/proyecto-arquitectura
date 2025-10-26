@@ -4,11 +4,14 @@ import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@/lib/hooks/useAuth'
+import { UsuarioPresentador } from '@/lib/presenters/UsuarioPresentador'
+import { Usuario } from '@/lib/models/Usuario'
 
 export default function EditProfilePage() {
   const router = useRouter()
-  const { user, updateProfile, loading, error } = useAuth(false)
+  const [usuario, setUsuario] = useState<Usuario | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -17,10 +20,27 @@ export default function EditProfilePage() {
   const [fieldMessage, setFieldMessage] = useState<string | null>(null)
   const [shake, setShake] = useState(false)
 
+  const presentador = new UsuarioPresentador()
+
   useEffect(() => {
-    if (user) setName(user.name)
-    if (user) setEmail(user.email)
-  }, [user])
+    const cargarUsuario = async () => {
+      setLoading(true)
+      try {
+        await presentador.validarSesion()
+        const usr = presentador.getUsuario()
+        setUsuario(usr)
+        if (usr) {
+          setName(usr.name)
+          setEmail(usr.email)
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Error al cargar usuario')
+      } finally {
+        setLoading(false)
+      }
+    }
+    cargarUsuario()
+  }, [])
 
   // Map hook error to inline field errors (email/name)
   useEffect(() => {
@@ -52,7 +72,7 @@ export default function EditProfilePage() {
     return () => clearTimeout(t)
   }, [shake])
 
-  if (!user) {
+  if (!usuario) {
     return <div className="p-8">Debes iniciar sesión para editar tu perfil.</div>
   }
 
@@ -85,11 +105,14 @@ export default function EditProfilePage() {
     }
 
     try {
-      await updateProfile(user.id, { name, email: email.trim(), password: password || undefined } as any)
+      const updatedUsuario = await presentador.actualizarPerfil(usuario.id, { name, email: email.trim(), password: password || undefined } as any)
+      setUsuario(updatedUsuario)
       setMessage('Perfil actualizado correctamente')
       setPassword('')
     } catch (err) {
-      setMessage(err instanceof Error ? err.message : 'Error al actualizar')
+      const msg = err instanceof Error ? err.message : 'Error al actualizar'
+      setError(msg)
+      setMessage(msg)
     }
   }
 
@@ -172,11 +195,11 @@ export default function EditProfilePage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="p-4 rounded-2xl bg-white border-2 border-emerald-100 shadow-sm">
                 <p className="text-xs text-emerald-600 font-medium">Email</p>
-                <p className="font-semibold text-gray-800">{user.email}</p>
+                <p className="font-semibold text-gray-800">{usuario.email}</p>
               </div>
               <div className="p-4 rounded-2xl bg-white border-2 border-green-100 shadow-sm">
                 <p className="text-xs text-green-600 font-medium">Rol</p>
-                <p className="font-semibold text-gray-800 capitalize">{user.rol}</p>
+                <p className="font-semibold text-gray-800 capitalize">{usuario.rol}</p>
               </div>
             </div>
 

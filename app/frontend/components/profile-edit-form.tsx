@@ -2,15 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useAuth } from '@/lib/hooks/useAuth';
-import { User } from '@/lib/types/auth.types';
+import { UsuarioPresentador } from '@/lib/presenters/UsuarioPresentador';
+import { Usuario } from '@/lib/models/Usuario';
 
 interface ProfileEditFormProps {
   onSuccess?: () => void;
 }
 
 export default function ProfileEditForm({ onSuccess }: ProfileEditFormProps) {
-  const { user, loading, error, updateProfile } = useAuth();
+  const [usuario, setUsuario] = useState<Usuario | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -20,14 +22,29 @@ export default function ProfileEditForm({ onSuccess }: ProfileEditFormProps) {
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
 
+  const presentador = new UsuarioPresentador();
+
   useEffect(() => {
-    if (user) {
-      const nameParts = user.name ? user.name.split(' ') : ['', ''];
-      setFirstName(nameParts[0] || '');
-      setLastName(nameParts.slice(1).join(' ') || '');
-      setEmail(user.email || '');
-    }
-  }, [user]);
+    const cargarUsuario = async () => {
+      setLoading(true);
+      try {
+        await presentador.validarSesion();
+        const usr = presentador.getUsuario();
+        setUsuario(usr);
+        if (usr) {
+          const nameParts = usr.name ? usr.name.split(' ') : ['', ''];
+          setFirstName(nameParts[0] || '');
+          setLastName(nameParts.slice(1).join(' ') || '');
+          setEmail(usr.email || '');
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Error al cargar el perfil');
+      } finally {
+        setLoading(false);
+      }
+    };
+    cargarUsuario();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,27 +55,32 @@ export default function ProfileEditForm({ onSuccess }: ProfileEditFormProps) {
       return;
     }
 
+    if (!usuario) {
+      setFormError('Usuario no encontrado.');
+      return;
+    }
+
+    setLoading(true);
     try {
-      const updateData: Partial<User> = {
+      const updateData = {
         name: `${firstName} ${lastName}`.trim(),
         email: email,
       };
 
       if (newPassword) {
-        // Aquí deberías tener un campo para la contraseña actual para validación en el backend
-        // Por simplicidad, lo omitimos en el frontend, pero es CRÍTICO para la seguridad.
-        // updateData.currentPassword = currentPassword;
-        // updateData.password = newPassword;
-        // Para este ejemplo, solo actualizaremos el nombre y email.
         setFormError('La actualización de contraseña no está implementada en este formulario.');
+        setLoading(false);
         return;
       }
 
-      await updateProfile(user!.id, updateData);
+      const updatedUsuario = await presentador.actualizarPerfil(usuario.id, updateData);
+      setUsuario(updatedUsuario);
       onSuccess?.();
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error al actualizar el perfil';
       setFormError(message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -70,7 +92,7 @@ export default function ProfileEditForm({ onSuccess }: ProfileEditFormProps) {
     return <div className="text-red-500">Error: {error}</div>;
   }
 
-  if (!user) {
+  if (!usuario) {
     return <div className="text-red-500">No se pudo cargar la información del usuario.</div>;
   }
 

@@ -5,7 +5,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useAuth } from "@/lib/hooks/useAuth"
+import { UsuarioPresentador } from "@/lib/presenters/UsuarioPresentador"
 
 interface AuthFormProps {
   isLogin: boolean
@@ -20,34 +20,39 @@ export default function AuthForm({ isLogin, onToggle, onSuccess }: AuthFormProps
   const [lastName, setLastName] = useState("")
   const [focusedField, setFocusedField] = useState<string | null>(null)
   const [formError, setFormError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
   
-  const { login, register, loading, error } = useAuth(true) // Skip validation en login
+  const presentador = new UsuarioPresentador()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setFormError(null)
+    setLoading(true)
 
     try {
       if (isLogin) {
         // login
-        await login({ email, password })
+        await presentador.iniciarSesion({ email, password })
       } else {
         // Registro: validaciones cliente
         const fullName = `${firstName} ${lastName}`.trim()
         if (fullName.length === 0) {
           setFormError('El nombre es obligatorio')
+          setLoading(false)
           return
         }
         if (fullName.length > 30) {
           setFormError('El nombre debe tener como máximo 30 caracteres')
+          setLoading(false)
           return
         }
         if (password.length < 6) {
           setFormError('La contraseña debe tener al menos 6 caracteres')
+          setLoading(false)
           return
         }
 
-        await register({
+        await presentador.registrarse({
           email,
           password,
           name: fullName,
@@ -61,6 +66,8 @@ export default function AuthForm({ isLogin, onToggle, onSuccess }: AuthFormProps
       const message = err instanceof Error ? err.message : 'Error de autenticación'
       setFormError(message)
       console.error('Error de autenticación:', err)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -75,11 +82,6 @@ export default function AuthForm({ isLogin, onToggle, onSuccess }: AuthFormProps
             <p className="font-sans text-base font-light tracking-wide text-muted-foreground md:text-lg">
               {isLogin ? "Ingresa tus credenciales para continuar" : "Completa el formulario para registrarte"}
             </p>
-            {error && (
-              <p className="font-sans text-sm font-normal text-red-500 bg-red-50 dark:bg-red-950/20 py-2 px-4 rounded">
-                {error}
-              </p>
-            )}
             {formError && (
               <p className="font-sans text-sm font-normal text-red-500 bg-red-50 dark:bg-red-950/20 py-2 px-4 rounded">
                 {formError}

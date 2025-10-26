@@ -1,19 +1,37 @@
 "use client"
 
 import React, { useState, useEffect } from 'react'
-import { useAuth } from '@/lib/hooks/useAuth'
+import { UsuarioPresentador } from '@/lib/presenters/UsuarioPresentador'
+import { Usuario } from '@/lib/models/Usuario'
 
 export default function ProfilePage() {
-  const { user, updateProfile, loading, error } = useAuth(false)
+  const [usuario, setUsuario] = useState<Usuario | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [name, setName] = useState('')
   const [password, setPassword] = useState('')
   const [message, setMessage] = useState<string | null>(null)
 
-  useEffect(() => {
-    if (user) setName(user.name)
-  }, [user])
+  const presentador = new UsuarioPresentador()
 
-  if (!user) {
+  useEffect(() => {
+    const cargarUsuario = async () => {
+      setLoading(true)
+      try {
+        await presentador.validarSesion()
+        const usr = presentador.getUsuario()
+        setUsuario(usr)
+        if (usr) setName(usr.name)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Error al cargar usuario')
+      } finally {
+        setLoading(false)
+      }
+    }
+    cargarUsuario()
+  }, [])
+
+  if (!usuario) {
     return <div style={{ padding: 16 }}>Debes iniciar sesión para editar tu perfil.</div>
   }
 
@@ -34,12 +52,21 @@ export default function ProfilePage() {
       return
     }
 
+    setLoading(true)
     try {
-      await updateProfile(user.id, { name, password: password || undefined } as any)
+      await presentador.actualizarPerfil(usuario.id, { name, password: password || undefined } as any)
       setMessage('Perfil actualizado correctamente')
       setPassword('')
+      // Actualizar el usuario local
+      const updatedUsr = presentador.getUsuario()
+      if (updatedUsr) {
+        setUsuario(updatedUsr)
+        setName(updatedUsr.name)
+      }
     } catch (err) {
       setMessage(err instanceof Error ? err.message : 'Error al actualizar')
+    } finally {
+      setLoading(false)
     }
   }
 

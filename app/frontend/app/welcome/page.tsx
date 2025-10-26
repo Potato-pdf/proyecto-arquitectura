@@ -4,14 +4,16 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link" // Importar Link
-import { tokenStorage } from "@/lib/store/token.storage"
-import { authApi } from "@/lib/api/auth.api"
+import { UsuarioPresentador } from "@/lib/presenters/UsuarioPresentador"
+import { Usuario } from "@/lib/models/Usuario"
 
 export default function WelcomePage() {
   const router = useRouter()
-  const [user, setUser] = useState<any>(null)
+  const [usuario, setUsuario] = useState<Usuario | null>(null)
   const [loading, setLoading] = useState(true)
   const [mounted, setMounted] = useState(false)
+
+  const presentador = new UsuarioPresentador()
 
   useEffect(() => {
     setMounted(true)
@@ -19,18 +21,14 @@ export default function WelcomePage() {
 
   useEffect(() => {
     const validateSession = async () => {
-      const token = tokenStorage.getToken()
-      
-      if (!token) {
-        router.replace('/')
-        return
-      }
-
       try {
-        const profile = await authApi.getProfile()
-        setUser(profile)
+        await presentador.validarSesion()
+        const usr = presentador.getUsuario()
+        setUsuario(usr)
+        if (!usr) {
+          router.replace('/')
+        }
       } catch (error) {
-        tokenStorage.removeToken()
         router.replace('/')
       } finally {
         setLoading(false)
@@ -51,7 +49,7 @@ export default function WelcomePage() {
     )
   }
 
-  if (!user) {
+  if (!usuario) {
     return null
   }
 
@@ -106,7 +104,7 @@ export default function WelcomePage() {
               {/* User name with animated underline */}
               <div className="relative inline-block w-full">
                 <p className="text-4xl md:text-5xl font-light text-emerald-900 animate-fade-in-delay-1">
-                  {user.name}
+                  {usuario.name}
                 </p>
                 <div className="absolute -bottom-2 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-emerald-500 to-transparent animate-shimmer"></div>
               </div>
@@ -122,7 +120,7 @@ export default function WelcomePage() {
                     </div>
                     <div className="text-left">
                       <p className="text-xs text-emerald-600 font-medium">Email</p>
-                      <p className="text-sm text-gray-800 font-semibold">{user.email}</p>
+                      <p className="text-sm text-gray-800 font-semibold">{usuario.email}</p>
                     </div>
                   </div>
                 </div>
@@ -136,7 +134,7 @@ export default function WelcomePage() {
                     </div>
                     <div className="text-left">
                       <p className="text-xs text-green-600 font-medium">Rol</p>
-                      <p className="text-sm text-gray-800 font-semibold capitalize">{user.rol}</p>
+                      <p className="text-sm text-gray-800 font-semibold capitalize">{usuario.rol}</p>
                     </div>
                   </div>
                 </div>
@@ -165,7 +163,7 @@ export default function WelcomePage() {
 
                 <button
                   onClick={() => {
-                    tokenStorage.removeToken()
+                    presentador.cerrarSesion();
                     router.push('/')
                   }}
                   className="group relative px-8 py-4 rounded-xl bg-white border-2 border-emerald-300 text-emerald-700 font-semibold overflow-hidden transition-all duration-300 hover:scale-105 hover:bg-emerald-50"
@@ -208,7 +206,7 @@ export default function WelcomePage() {
 
           {/* Footer info */}
           <div className="mt-12 text-center text-xs text-emerald-600/60 animate-fade-in-delay-4">
-            <p>ID de sesión: {user.id.substring(0, 8)}...</p>
+            <p>ID de sesión: {usuario.id.substring(0, 8)}...</p>
           </div>
         </div>
       </div>
