@@ -6,21 +6,38 @@ import { User } from './entities/user.entity';
 import { UsuariosCQRS } from './cqrs/UsuariosCQRS';
 import { UsrInsertExternoViewModel } from './view_model/UsrInsertExternoViewModel';
 import { UsrPublicoExternoViewModel } from './view_model/UsrPublicoExternoViewModel';
+import { ApiExternaService } from '../apiservice/ApiExternaService';
 
 @Injectable()
 export class UsersService {
   constructor(
     private readonly userDAO: UserDAO,
     private readonly usuariosCQRS: UsuariosCQRS,
+    private readonly apiExternaService: ApiExternaService,
   ) {}
 
-  create(createUserDto: CreateUserDto) {
+  async create(createUserDto: CreateUserDto) {
     // Pasa por CQRS antes de llegar al DAO
-    return this.usuariosCQRS.insert(createUserDto);
+    const newUser = await this.usuariosCQRS.insert(createUserDto);
+    // Después de registrar localmente, insertar en API externa
+    await this.apiExternaService.InsertUsuario({
+      name: newUser.name,
+      mail: newUser.email,
+      password: createUserDto.password, // Usar la contraseña original
+    });
+    return newUser;
   }
 
-  findAll() {
-    return this.userDAO.getUsuarios();
+  async findAll() {
+    // Obtener usuarios locales
+    const usuariosLocales = await this.userDAO.getUsuarios();
+    // Obtener usuarios externos
+    const usuariosExternos = await this.apiExternaService.GetUsuarios();
+    // Combinar y devolver
+    return {
+      locales: usuariosLocales,
+      externos: usuariosExternos,
+    };
   }
 
   findOne(id: string) {
